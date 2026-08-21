@@ -1,0 +1,60 @@
+# Environment & Secrets
+.env
+*.env.local
+
+# Python
+__pycache__/
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Local scratch / generated preflight files
+tmp/
+scratch/
+daa87c0b-d14d-45d5-b9dd-803b602e18a5.pdf
+wexa_ai_graph_database_cloud_benchmarking.md
+
+# Data caches (raw downloads)
+data/*.tar.gz
+data/*.gz
+data/raw/
+
+# Docker volumes / persistence
+docker_data/
+neo4j_data/
+memgraph_data/
+falkordb_data/
+arangodb_data/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

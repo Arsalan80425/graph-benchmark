@@ -1,0 +1,37 @@
+[project]
+name = "wexa-ai-graph-benchmarks"
+version = "1.0.0"
+description = "Graph Database Cloud Benchmarking Suite for Wexa AI"
+authors = [{ name = "Wexa AI Benchmarking Lab" }]
+readme = "README.md"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "SIM", # flake8-simplify
+]
+ignore = [
+    "E501", # line too long (handled by formatter)
+    "B008", # do not perform function calls in argument defaults
+    "SIM105", # try-except-pass vs contextlib.suppress
+    "SIM112", # environment variable naming convention
+]
+
+[tool.pytest.ini_options]
+addopts = "-m 'not integration'"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+markers = [
+    "integration: requires live database services and may require cloud credentials",
+]

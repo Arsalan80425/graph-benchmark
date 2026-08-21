@@ -1,0 +1,76 @@
+# ==============================================================================
+# Strict Resource-Constrained Graph Database Benchmark Sandbox
+#
+# Fairness & Resource Allocation Methodology:
+# - CPU: 0.5 vCPU limit across all 5 platforms
+# - RAM: Standardized 512 MB RAM tier across all 5 platforms (matching CognoDB Cloud c0):
+#   - CognoDB Cloud: 0.5 burstable vCPU, 512 MB RAM, 1 GiB Storage (c0 free tier)
+#   - Neo4j 5: 0.5 vCPU, 512 MB container (192MB Heap, 64MB PageCache, JVM runtime)
+#   - Memgraph 2.16: 0.5 vCPU, 512 MB container (--memory-limit=384 in-memory C++ graph)
+#   - FalkorDB: 0.5 vCPU, 512 MB container (Redis GraphBLAS sparse matrices)
+#   - ArangoDB 3.11: 0.5 vCPU, 512 MB container (RocksDB storage engine)
+# ==============================================================================
+
+services:
+  neo4j:
+    image: neo4j:5.18.0-community
+    container_name: benchmark-neo4j
+    mem_limit: 512m
+    cpus: 0.5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    environment:
+      - NEO4J_AUTH=none
+      - NEO4J_server_default__listen__address=0.0.0.0
+      - NEO4J_server_memory_heap_initial__size=192m
+      - NEO4J_server_memory_heap_max__size=192m
+      - NEO4J_server_memory_pagecache_size=64m
+    ports:
+      - "7687:7687"
+      - "7474:7474"
+
+  memgraph:
+    image: memgraph/memgraph:2.16.0
+    container_name: benchmark-memgraph
+    mem_limit: 512m
+    cpus: 0.5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    command: ["--log-level=WARNING", "--memory-limit=384"]
+    ports:
+      - "7688:7687"
+
+  falkordb:
+    image: falkordb/falkordb:v4.2.1
+    container_name: benchmark-falkordb
+    mem_limit: 512m
+    cpus: 0.5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    ports:
+      - "6379:6379"
+
+  arangodb:
+    image: arangodb:3.11.8
+    container_name: benchmark-arangodb
+    mem_limit: 512m
+    cpus: 0.5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    environment:
+      - ARANGO_NO_AUTH=1
+    command: ["arangod", "--server.descriptors-minimum=1024"]
+    ports:
+      - "8529:8529"
