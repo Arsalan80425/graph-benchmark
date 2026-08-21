@@ -196,9 +196,9 @@ All 5 platforms completed the full benchmarking suite with verified $17,441\text
 |---|---|---|---|---|
 | **CognoDB Cloud** | **complete** | **PASS (6/6 checks)** | 2026-08-21T05:30:07Z | 0 errors across 5,936 mixed operations |
 | **Neo4j 5 (Capped)** | **complete** | **PASS (6/6 checks)** | 2026-08-21T06:32:50Z | 0 errors across 35,401 mixed operations |
-| **Memgraph 2.16 (In-Memory C++)** | **complete** | **PASS (6/6 checks)** | 2026-08-21T05:46:37Z | 1 write timeout at 40 clients (0.004% error rate) |
+| **Memgraph 2.16 (In-Memory C++)** | **complete** | **PASS (6/6 checks)** | 2026-08-21T05:46:37Z | 1 mixed-workload error at 40 clients (0.004% error rate) |
 | **FalkorDB 4.2.1 (GraphBLAS)** | **complete** | **PASS (6/6 checks)** | 2026-08-21T05:56:05Z | 0 errors across 81,674 mixed operations |
-| **ArangoDB 3.11** | **complete** | **PASS (6/6 checks)** | 2026-08-21T05:58:07Z | 1 write error at 10 clients, 2 at 40 clients (0.01% error rate) |
+| **ArangoDB 3.11** | **complete** | **PASS (6/6 checks)** | 2026-08-21T05:58:07Z | 1 error at 10 clients, 2 at 40 clients (0.01% error rate) |
 
 ### 2. Data Loading & Verified Throughput
 | Platform | Loaded Nodes | Loaded Edges | Count Check | Wall Time (s) | Ingestion Nodes/s | Ingestion Rels/s |
