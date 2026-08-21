@@ -19,8 +19,8 @@ Every platform was evaluated on the exact same canonical dataset of **17,441 nod
 |                                  KEY EMPIRICAL TAKEAWAYS                                          |
 +---------------------------------------------------------------------------------------------------+
 | 1. High-Concurrency Scale-Out:                                                                    |
-|    CognoDB Cloud achieved near-linear horizontal scaling under concurrent load, scaling from      |
-|    3.9 QPS (1 client) to 153.4 QPS (40 clients) with 0 errors, despite high WAN transport latency.|
+|    CognoDB Cloud achieved strong horizontal scaling under concurrent load, scaling from           |
+|    3.9 QPS (1 client) to 153.4 QPS across 40 clients with 0 errors, despite WAN transport latency. |
 |                                                                                                   |
 | 2. Peak In-Memory Throughput:                                                                     |
 |    Memgraph (C++ pointer graph) and FalkorDB (GraphBLAS sparse matrix) demonstrated raw speed,   |
@@ -50,7 +50,9 @@ To establish rigorous fairness, all local containerized databases were constrain
 | **FalkorDB 4.2.1** | Local Docker Container | 0.5 vCPU | 512 MB Container | Host NVMe (Uncapped) | Localhost Loopback |
 | **ArangoDB 3.11** | Local Docker Container | 0.5 vCPU | 512 MB Container | Host NVMe (Uncapped) | Localhost Loopback |
 
-> **Evidence Note:** CognoDB Cloud console allocation was verified on **21 August 2026** showing `c0 · 512 MB RAM, 0.5 burstable vCPU, 1 GiB storage, up to 500 IOPS` (archived in [`evidence/cognodb-c0-allocation.png`](evidence/cognodb-c0-allocation.png)).
+> **Evidence & Execution Provenance Note:**  
+> - CognoDB Cloud console allocation was verified on **21 August 2026** showing `c0 · 512 MB RAM, 0.5 burstable vCPU, 1 GiB storage, up to 500 IOPS` (archived in [`evidence/cognodb-c0-allocation.png`](evidence/cognodb-c0-allocation.png)).
+> - These 5 platform records represent isolated per-target full runs on uniform 512MB RAM / 0.5 CPU cgroups consolidated into the canonical `results/benchmark_results.json` matrix.
 
 ---
 
@@ -69,9 +71,10 @@ To establish rigorous fairness, all local containerized databases were constrain
 | **ArangoDB 3.11** | 5.62 s | 17,635.6 | 23,075.7 | 17,441 / 100,000 (PASS) |
 
 #### Architectural Analysis:
-- **ArangoDB & FalkorDB/Memgraph** achieved massive write throughput ($>11,000\text{ to }23,000\text{ rels/sec}$) thanks to low-overhead batch document/matrix insertions over local loopback. (Note: ArangoDB's initial load utilized batched document insertion before synchronous flush enforcement).
-- **CognoDB Cloud Ingestion Optimization**: Initially, edge ingestion was bottlenecked by unindexed node scans. Adding a `UNIQUE CONSTRAINT` on `Node.id` (primary key hash index) accelerated edge ingestion throughput from $\sim 13\text{ rels/sec}$ to **$182.8\text{ rels/sec}$**, allowing 100,000 relationships to load in $9.3\text{ minutes}$ over WAN.
-- The remaining difference between CognoDB ($182.8\text{ rels/sec}$) and local engines ($>4,500\text{ rels/sec}$) is dictated by WAN network round-trip overhead ($287\text{ ms}$ per batch round-trip) and cloud IOPS limits.
+- **ArangoDB & FalkorDB/Memgraph** achieved high write throughput ($>11,000\text{ to }23,000\text{ rels/sec}$) thanks to low-overhead batch document/matrix insertions over local loopback.
+- **Note on Write Durability Parity**: The published ArangoDB ingestion result (5.62s / 23,075 rels/s) utilized asynchronous batch ingestion (`collection.insert_many(sync=False)`); the submitted repository code now defaults to synchronous write durability (`sync=True`) for full parity with transactional Bolt UNWIND.
+- **CognoDB Cloud Ingestion Optimization**: Adding a `UNIQUE CONSTRAINT` on `Node.id` (primary key hash index) accelerated edge ingestion throughput from $\sim 13\text{ rels/sec}$ to **$182.8\text{ rels/sec}$**, allowing 100,000 relationships to load in $9.3\text{ minutes}$ over WAN.
+- The remaining throughput delta between CognoDB ($182.8\text{ rels/sec}$) and local engines ($>4,500\text{ rels/sec}$) is dictated by WAN network round-trip overhead ($287\text{ ms}$ per batch round-trip) and cloud IOPS limits.
 
 ---
 
@@ -109,7 +112,7 @@ To establish rigorous fairness, all local containerized databases were constrain
 
 - **Point Lookup ($O(1)$)**: FalkorDB (0.89ms) and Memgraph (1.16ms) provide instant key seeks.
 - **Filtered Lookup**: Filtering by `category` and minimum-`year` predicate (`year >= 2012–2020`) demonstrates the efficacy of secondary property RANGE indexes across all platforms.
-- **Aggregation**: Group-by aggregation across 17,441 nodes executed in $<10\text{ ms}$ on all local engines.
+- **Aggregation**: Group-by aggregation across 17,441 nodes executed in $<10\text{ ms}$ on in-memory and native graph engines (Memgraph 6.64ms, FalkorDB 5.18ms, Neo4j 9.48ms), while ArangoDB AQL executed in 55.85ms.
 
 ---
 
@@ -127,10 +130,10 @@ To establish rigorous fairness, all local containerized databases were constrain
 | **ArangoDB 3.11** | 22.6 QPS (44.00 / 47.56 ms) | 211.5 QPS (47.15 / 52.89 ms) | **670.6 QPS** (59.01 / 82.74 ms) | 80.0% R / 20.0% W |
 
 #### Concurrency & Scaling Insights:
-1. **CognoDB Cloud Scale-Out Ratio**:
-   CognoDB Cloud scaled from **3.9 QPS** at 1 thread to **153.4 QPS** at 40 threads—a **$39.3\times$ throughput increase across 40 clients** ($98.3\%$ linear efficiency). Its p50 latency remained completely flat ($249.9\text{ ms} \rightarrow 251.2\text{ ms}$), demonstrating strong connection-pool multiplexing and query pipeline concurrency in the managed tier.
-2. **Local Engine Saturation**:
-   On local containers constrained to 0.5 CPU, Memgraph and FalkorDB peaked between 10 and 40 clients as the single shared core reached saturation, with latency increasing from $\sim 1.3\text{ ms}$ to $39.3\text{ ms}$. Minor transient timeouts occurred under peak concurrency on Memgraph (1 error out of 26,577 ops, 0.004%) and ArangoDB (2 errors out of 20,174 ops, 0.01%), which are fully disclosed.
+1. **CognoDB Cloud Scaling**:
+   CognoDB Cloud scaled from **3.9 QPS** at 1 thread to **153.4 QPS** at 40 threads ($39.3\times$ increase). Its p50 latency remained flat ($249.9\text{ ms} \rightarrow 251.2\text{ ms}$), demonstrating strong connection-pool multiplexing in the managed tier.
+2. **Local Engine Saturation & Disclosed Errors**:
+   On local containers constrained to 0.5 CPU, Memgraph and FalkorDB peaked between 10 and 40 clients as the single shared core reached saturation. Minor transient errors under high-concurrency saturation occurred on Memgraph (1 error out of 26,577 operations, 0.004%) and ArangoDB (1 error out of 6,353 ops at 10 clients, 2 errors out of 20,174 ops at 40 clients), which are fully disclosed.
 
 ---
 

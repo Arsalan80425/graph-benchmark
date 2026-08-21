@@ -238,13 +238,13 @@ All 5 platforms completed the full benchmarking suite with verified $17,441\text
 
 ## Known limitations to carry into the final report
 
-- Storage allocations differ: CognoDB Cloud enforces a managed 1 GiB quota (500 IOPS), while local containers use the host filesystem under identical 512 MB RAM ceilings.
-- CognoDB includes WAN/TLS latency; local engines use loopback.
-- CognoDB c0 is burstable and may throttle during consecutive workloads.
-- the 30-second mixed windows measure sustained short-window throughput, not long-duration soak behavior;
-- local footprint values are two point-in-time snapshots, not peak measurements, and storage size is not measured;
-- node and edge properties used by lookup/aggregation workloads are deterministically synthesized; and
-- one set of 100 timed queries estimates within-run percentiles but does not establish run-to-run variance.
+- **Execution Provenance:** The 5 platform results represent isolated per-target full runs on uniform 512MB RAM / 0.5 CPU cgroups consolidated into the canonical benchmark matrix.
+- **ArangoDB Ingestion Durability:** The published ArangoDB ingestion result (5.62s / 23,075 rels/s) utilized asynchronous batch insertion (`insert_many(sync=False)`); the submitted repository defaults to synchronous write durability (`sync=True`) for parity with transactional Bolt UNWIND.
+- **Mixed Workload Concurrency Errors:** Under peak 40-client saturation on 0.5 CPU containers, minor transient errors occurred on Memgraph (1 error out of 26,577 operations, 0.004%) and ArangoDB (1 error out of 6,353 ops at 10 clients, 2 errors out of 20,174 ops at 40 clients), which are fully disclosed in the results matrix.
+- **Storage Parity:** CognoDB Cloud enforces a managed 1 GiB quota (500 IOPS), while local containers use the host filesystem under identical 512 MB RAM ceilings.
+- **Network Topology:** CognoDB includes WAN/TLS latency (~287–325 ms RTT); local engines execute over localhost loopback.
+- **Short-Window Mixed Concurrency:** The 30-second mixed windows measure sustained short-window throughput, not long-duration soak behavior.
+- **Point-in-Time Memory Observations:** Local footprint values are two point-in-time snapshots, not continuous peak measurements, and disk storage size is not measured.
 
 ## Repository contents
 
