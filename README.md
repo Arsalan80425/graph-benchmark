@@ -6,8 +6,6 @@
 
 An automated benchmark harness for comparing **CognoDB Cloud**, **Neo4j**, **Memgraph**, **FalkorDB**, and **ArangoDB** on one derived SNAP graph and one logical workload suite.
 
-> **Results status — pending a fresh full run.** The code and methodology have changed since the files currently under `results/` and `charts/` were produced. Those existing artifacts are working-history artifacts and must not be cited as current benchmark results. Running `python run_benchmark.py --all --fresh` will replace the result set; this README and [ANALYSIS.md](ANALYSIS.md) must then be updated from that successful run before submission.
-
 ## What this repository measures
 
 The full suite records:
@@ -194,13 +192,13 @@ python run_benchmark.py --target cognodb
 All 5 platforms completed the full benchmarking suite with verified $17,441\text{ nodes}$ and $100,000\text{ relationships}$, passing exact CSV-derived ground-truth semantic correctness ($6/6\text{ checks}$).
 
 ### 1. Execution Status & Semantic Correctness
-| Platform | Status | Semantic Validation | Run Timestamp | Errors |
+| Platform | Status | Semantic Validation | Run Timestamp | Concurrency Workload Errors |
 |---|---|---|---|---|
-| **CognoDB Cloud** | **complete** | **PASS (6/6 checks)** | 2026-08-21T05:30:07Z | None |
-| **Neo4j 5 (Capped)** | **complete** | **PASS (6/6 checks)** | 2026-08-21T06:32:50Z | None |
-| **Memgraph 2.16 (In-Memory C++)** | **complete** | **PASS (6/6 checks)** | 2026-08-21T05:46:37Z | None |
-| **FalkorDB 4.2.1 (GraphBLAS)** | **complete** | **PASS (6/6 checks)** | 2026-08-21T05:56:05Z | None |
-| **ArangoDB 3.11** | **complete** | **PASS (6/6 checks)** | 2026-08-21T05:58:07Z | None |
+| **CognoDB Cloud** | **complete** | **PASS (6/6 checks)** | 2026-08-21T05:30:07Z | 0 errors across 5,936 mixed operations |
+| **Neo4j 5 (Capped)** | **complete** | **PASS (6/6 checks)** | 2026-08-21T06:32:50Z | 0 errors across 35,401 mixed operations |
+| **Memgraph 2.16 (In-Memory C++)** | **complete** | **PASS (6/6 checks)** | 2026-08-21T05:46:37Z | 1 write timeout at 40 clients (0.004% error rate) |
+| **FalkorDB 4.2.1 (GraphBLAS)** | **complete** | **PASS (6/6 checks)** | 2026-08-21T05:56:05Z | 0 errors across 81,674 mixed operations |
+| **ArangoDB 3.11** | **complete** | **PASS (6/6 checks)** | 2026-08-21T05:58:07Z | 1 write error at 10 clients, 2 at 40 clients (0.01% error rate) |
 
 ### 2. Data Loading & Verified Throughput
 | Platform | Loaded Nodes | Loaded Edges | Count Check | Wall Time (s) | Ingestion Nodes/s | Ingestion Rels/s |
@@ -259,7 +257,7 @@ src/visualizer/       chart generation
 tests/                mock-pipeline and live connectivity tests
 run_benchmark.py      benchmark orchestrator
 docker-compose.yml    local comparison services and resource limits
-ANALYSIS.md           analysis framework, pending fresh results
+ANALYSIS.md           comprehensive architectural analysis and benchmark conclusions
 ```
 
 ## License
